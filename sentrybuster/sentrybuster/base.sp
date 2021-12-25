@@ -101,7 +101,7 @@ methodmap SentryBuster < CBaseCombatCharacter
 
 			if (vision.IsLineOfSightClearToEntity(victim.index))
 			{
-				float damage = float(victim.GetProp(Prop_Send, "m_iHealth"));
+				float damage = float(victim.GetProp(Prop_Data, "m_iHealth"));
 				SDKHooks_TakeDamage(victim.index, this.index, this.index, damage * 4, DMG_BLAST, _, CalculateMeleeDamageForce(damage, delta, 1.0), center);
 			}
 		}

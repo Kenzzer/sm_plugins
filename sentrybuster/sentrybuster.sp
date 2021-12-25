@@ -30,7 +30,7 @@ public void OnPluginStart()
 	phys_pushscale = FindConVar("phys_pushscale");
 	SentryBuster_Init();
 
-	RegConsoleCmd("sm_bust", Command_Buster);
+	RegAdminCmd("sm_bust", Command_Buster, ADMFLAG_ROOT);
 }
 
 public void OnMapStart()
@@ -40,35 +40,69 @@ public void OnMapStart()
 
 public Action Command_Buster(int client, int args)
 {
-	if (client == 0)
+	if (client == 0 || args != 3)
 	{
 		return Plugin_Continue;
 	}
 
-	SentryBuster buster = view_as<SentryBuster>(CreateEntityByName("cbasenpc_sentry_buster"));
-	if (buster.index != -1)
+	char sSpawnTeam[5], sBusterTeam[5];
+	GetCmdArg(2, sSpawnTeam, sizeof(sSpawnTeam));
+	GetCmdArg(3, sBusterTeam, sizeof(sBusterTeam));
+
+	int spawnTeam = StringToInt(sSpawnTeam);
+	int busterTeam = StringToInt(sBusterTeam);
+
+	ArrayList spawns = new ArrayList();
+	int spawn = -1;
+	while ((spawn = FindEntityByClassname(spawn, "info_player_teamspawn")) != -1)
 	{
-		ArrayList spawns = new ArrayList();
-		int spawn = -1;
-		while ((spawn = FindEntityByClassname(spawn, "info_player_teamspawn")) != -1)
+		if (GetEntProp(spawn, Prop_Data, "m_iTeamNum") == spawnTeam)
 		{
-			if (GetEntProp(spawn, Prop_Data, "m_iTeamNum") == 3)
-			{
-				spawns.Push(spawn);
-			}
+			spawns.Push(spawn);
 		}
+	}
 
-		CBaseEntity teamSpawn = CBaseEntity(spawns.Get(GetRandomInt(0, spawns.Length - 1)));
-		float pos[3];
-		teamSpawn.GetAbsOrigin(pos);
-
-		buster.Teleport(pos);
-		buster.hTarget = client;
-		buster.SetProp(Prop_Data, "m_iTeamNum", 3); 
-		buster.Spawn();
+	char targetName[32];
+	GetCmdArg(1, targetName, sizeof(targetName));
+	
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[MAXPLAYERS], target_count;
+	bool tn_is_ml;
+	
+	if ((target_count = ProcessTargetString(
+			targetName,
+			client,
+			target_list,
+			MAXPLAYERS,
+			0,
+			target_name,
+			sizeof(target_name),
+			tn_is_ml)) <= 0)
+	{
 		return Plugin_Handled;
 	}
-	return Plugin_Continue;
+
+	for (int i = 0; i < target_count; i++)
+	{
+		int target = target_list[i];
+		
+		if (IsClientSourceTV(target)) continue; // Exclude the sourcetv bot
+		
+		SentryBuster buster = view_as<SentryBuster>(CreateEntityByName("cbasenpc_sentry_buster"));
+		if (buster.index != -1)
+		{
+			CBaseEntity teamSpawn = CBaseEntity(spawns.Get(GetRandomInt(0, spawns.Length - 1)));
+			float pos[3];
+			teamSpawn.GetAbsOrigin(pos);
+
+			buster.Teleport(pos);
+			buster.hTarget = target;
+			buster.SetProp(Prop_Data, "m_iTeamNum", busterTeam); 
+			buster.Spawn();
+		}
+	}
+
+	return Plugin_Handled;
 }
 
 stock int FindStringIndex2(int tableidx, const char[] str)
