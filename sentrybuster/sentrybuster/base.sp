@@ -19,19 +19,6 @@ methodmap SentryBuster < CBaseCombatCharacter
 
 	public static void Precache()
 	{
-		// If/When PrecacheScriptSound is fixed, these should no longer
-		// be necessary
-		PrecacheSound(")mvm/sentrybuster/mvm_sentrybuster_explode.wav");
-		PrecacheSound(")mvm/sentrybuster/mvm_sentrybuster_spin.wav");
-		PrecacheSound("mvm/sentrybuster/mvm_sentrybuster_loop.wav");
-		PrecacheSound(")mvm/sentrybuster/mvm_sentrybuster_intro.wav");
-	
-		PrecacheSound("^mvm/sentrybuster/mvm_sentrybuster_step_01.wav");
-		PrecacheSound("^mvm/sentrybuster/mvm_sentrybuster_step_02.wav");
-		PrecacheSound("^mvm/sentrybuster/mvm_sentrybuster_step_03.wav");
-		PrecacheSound("^mvm/sentrybuster/mvm_sentrybuster_step_04.wav");
-
-		// Actual precache part
 		PrecacheScriptSound("MVM.SentryBusterExplode");
 		PrecacheScriptSound("MVM.SentryBusterSpin");
 		PrecacheScriptSound("MVM.SentryBusterLoop");
@@ -58,7 +45,7 @@ methodmap SentryBuster < CBaseCombatCharacter
 		TE_Particle(g_particleExplosion[1], pos, _, ang);
 		TE_SendToAll();
 		
-		EmitGameSoundToAll("MVM.SentryBusterExplode", .origin = pos);
+		EmitGameSoundToAll("MVM.SentryBusterExplode", SOUND_FROM_WORLD, .origin = pos);
 
 		UTIL_ScreenShake(pos, 25.0, 5.0, 5.0, 1000.0, SHAKE_START, false);
 
